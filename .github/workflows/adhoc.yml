@@ -1,8 +1,8 @@
 name: PR Comment Trigger Demo
 
 on:
-  issue_comment:
-    types: [created]
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
