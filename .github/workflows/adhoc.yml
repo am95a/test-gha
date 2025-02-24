@@ -1,0 +1,42 @@
+name: PR Comment Trigger Demo
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  demo-job:
+    runs-on: ubuntu-latest
+    # Only run if the comment is on a PR and starts with /run-demo
+    if: |
+      github.event.issue.pull_request != '' && 
+      startsWith(github.event.comment.body, '/run-demo')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        # We need to fetch the PR branch
+        ref: ${{ github.event.pull_request.head.ref }}
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+    
+    - name: Parse command arguments
+      id: parse
+      run: |
+        COMMENT="${{ github.event.comment.body }}"
+        # Extract arguments after /run-demo
+        ARGS=$(echo "$COMMENT" | sed -e 's/^\/run-demo\s*//')
+        echo "args=$ARGS" >> $GITHUB_OUTPUT
+        echo "Comment received: $COMMENT"
+        echo "Arguments parsed: $ARGS"
+    
+    - name: Run the demo
+      run: |
+        echo "Demo workflow triggered successfully!"
+        echo "Arguments received: ${{ steps.parse.outputs.args }}"
+        echo "This workflow was triggered by ${{ github.event.comment.user.login }}"
+        echo "PR #${{ github.event.issue.number }}"
+        date
